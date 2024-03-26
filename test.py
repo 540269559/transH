@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 import json
 import operator
-import numpy as np
-import codecs
-import threading
 import torch
 import time
 
 from TransH import clearProgressText, writingProgressText
 # from TransH_torch import dataloader,entities2id,relations2id
 
-from TransH import data_loader
 entity2id = {}
 relation2id = {}
 
