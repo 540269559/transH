@@ -5,7 +5,6 @@ import torch
 import time
 
 from TransH import clearProgressText, writingProgressText
-# from TransH_torch import dataloader,entities2id,relations2id
 
 entity2id = {}
 relation2id = {}
@@ -32,9 +31,6 @@ def loadEntityAndRelation(filePath):
             relationName = arr[0]
             relationId = arr[1]
             relation2id[relationName] = relationId
-    
-
-
 
 
 def load_vector(fileName, filePath='./trainResult/'):
@@ -52,8 +48,6 @@ def load_vector(fileName, filePath='./trainResult/'):
 def load_triple(fileName, filePath='./FB15k/'):
     file = filePath + fileName
     resultTripleList = []
-    # entitySet = set()
-    # relationSet = set()
     with open(file, 'r') as f:
         lines = f.readlines()
         for line in lines:
@@ -66,18 +60,8 @@ def load_triple(fileName, filePath='./FB15k/'):
             headId = entity2id[headName]
             relationId = relation2id[relationName]
             tailId = entity2id[tailName]
-            # entitySet.add(headId)
-            # entitySet.add(tailId)
-            # relationSet.add(relationId)
             resultTripleList.append([headId, relationId, tailId])
     return resultTripleList
-
-
-# def test_data_loader(entity_embedding_file, norm_relation_embedding_file, hyper_relation_embedding_file, test_data_file):
-    
-
-
-
 class testTransH:
     def __init__(self, entityVectorDict, relationNormVectorDict, relationHyperVectorDict, testTripleList, trainTripleList, validTripleList, filter_triple=False ,norm=1):
         self.entityVectorDict = entityVectorDict 
@@ -88,7 +72,6 @@ class testTransH:
         self.validTripleList = validTripleList 
         self.filter = filter_triple 
         self.norm = norm 
-
 
     def test_run(self):
         hits = 0
@@ -222,9 +205,6 @@ class testTransH:
         score = torch.norm(distanceHT, p=self.norm, dim=1)
         return score.numpy()
 
-        
-
-
 if __name__ == "__main__":
     # 初始化entity2id和relation2id
     loadEntityAndRelation("./FB15k/")
@@ -254,8 +234,6 @@ if __name__ == "__main__":
     writingProgressText(message, fileName='./testStatus.txt')
     # 把这些三元组全部拿到，用于test_run验证
 
-
-
     test = testTransH(
         entityVectorDict, relationNormVectorDict, 
         relationHyperVectorDict, testTripleList, 
@@ -267,9 +245,3 @@ if __name__ == "__main__":
     print("raw entity meanrank: ",mean_rank)
     result = "hits@10:%.4f, meanrank:%.4f" % (hit10, mean_rank)
     writingProgressText(result, filePath='', fileName='./result.txt')
-
-    # test2 = testTransH(entity, norm_relation, hyper_relation, test_triple, train_triple, valid_triple,
-    #                   filter_triple=True, norm=2)
-    # filter_hit10, filter_mean_rank = test2.test_run()
-    # print("filter entity hits@10: ", filter_hit10)
-    # print("filter entity meanrank: ", filter_mean_rank)
