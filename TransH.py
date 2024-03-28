@@ -9,7 +9,8 @@ relation2id = {}
 relationTPH = {}
 relationHPT = {}
 # filePath = "./FB15k/"
-filePath = "./WN18/"
+datasetPath = "./WN18/"
+datasetName = "WN18"
 # 将进程运行的内容文件删除
 def clearProgressText(filePath='./progressMessage/', fileName='trainStatus.txt'):
     file = filePath + fileName
@@ -18,6 +19,7 @@ def clearProgressText(filePath='./progressMessage/', fileName='trainStatus.txt')
 
 # 将进程运行的内容输入到text中
 def writingProgressText(text, filePath='./progressMessage/', fileName='trainStatus.txt'):
+    print(text)
     file = filePath + fileName
     with open(file, 'a', encoding='utf-8') as f:
         f.write(text + '\n')
@@ -30,21 +32,6 @@ def storeResult(fileName, vectorDict, filePath='./trainResult/'):
             f.write(key + "\t")
             f.write(str(list(vectorDict[key])))
             f.write("\n")
-
-# 删除训练结果的文件
-# def clearTrainResult():
-#     directory = "./trainResult"
-#     # 获取目录下的所有文件和子目录
-#     files_in_directory = os.listdir(directory)
-#     # 遍历目录下的所有文件和子目录
-#     for item in files_in_directory:
-#         # 构建文件或子目录的完整路径
-#         full_path = os.path.join(directory, item)
-
-#         # 判断是否为文件，如果是则删除
-#         if os.path.isfile(full_path):
-#             os.remove(full_path)
-#     return
 
 # 加载数据
 def data_loader(file):
@@ -126,7 +113,6 @@ def data_loader(file):
     entityIdSet = set(entity2id.values())
     relationIdSet = set(relation2id.values())
     message = "所有数据加载完毕,实体有%d个,关系有%d个,三元组有%d个" % (len(entityIdSet), len(relationIdSet), len(tripleList))
-    print(message)
     writingProgressText(message)
     return entityIdSet, relationIdSet, tripleList
 
@@ -209,7 +195,7 @@ class TransH:
 
     # epochs轮数
     # batch批次
-    def training_run(self, epochs=10, batch=400):
+    def training_run(self, epochs=100, batch=400):
         # 根据批次获得每次训练样本的总数
         batchSize = int(len(self.tripleList) / batch)
         # 先按轮次
@@ -235,7 +221,6 @@ class TransH:
                 if count % 20 == 0:
                     message = "当前批次为:%d,总共批次为:%d" % (count, batch)
                     writingProgressText(message)
-                    print(message)
                 for triple in tripleSamples:
 
                     copyTriple = copy.deepcopy(triple)
@@ -265,12 +250,11 @@ class TransH:
             endTime = time.time()
             spendTime = round(endTime - startTime, 2)
             message = "总轮数:%d,当前进行的轮数:%d,本轮花费的时间:%.2f,损失值:%d" % (epochs, epoch + 1, spendTime, self.loss)
-            print(message)
             writingProgressText(message)
         # 存储结果
-        entityFileName = "entity_" + filePath + "_" + str(self.dimension) + "dim_batch" + str(batch)
-        relationNormFileName = "relation_norm_" + filePath + "_" + str(self.dimension) + "dim_batch" + str(batch)
-        relationHyperFileName = "relation_hyper_" + filePath + "_" + str(self.dimension) + "dim_batch" + str(batch)
+        entityFileName = datasetName + "_entity_" + str(self.dimension) + "dim_batch" + str(batch)
+        relationNormFileName = datasetName + "_relation_norm_" + str(self.dimension) + "dim_batch" + str(batch)
+        relationHyperFileName = datasetName + "_relation_hyper_" + str(self.dimension) + "dim_batch" + str(batch)
         storeResult(entityFileName, self.entityVector)
         storeResult(relationNormFileName, self.relationNormVector)
         storeResult(relationHyperFileName, self.relationHyperVector)
@@ -389,7 +373,7 @@ if __name__ == '__main__':
     clearProgressText()
     # 删除结果文件
     # clearTrainResult()
-    entityIdSet, relationIdSet, tripleList = data_loader(filePath)
+    entityIdSet, relationIdSet, tripleList = data_loader(datasetPath)
 
     transH = TransH(entityIdSet, relationIdSet, tripleList, dimension=50, lr=0.01, margin=1.0, norm=1)
     transH.dataInitialization()

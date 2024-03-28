@@ -45,7 +45,7 @@ def load_vector(fileName, filePath='./trainResult/'):
             resultVectorDict[arr[0]] = json.loads(arr[1])
     return resultVectorDict
 
-def load_triple(fileName, filePath='./FB15k/'):
+def load_triple(fileName, filePath):
     file = filePath + fileName
     resultTripleList = []
     with open(file, 'r') as f:
@@ -133,14 +133,11 @@ class testTransH:
             endTime = time.time()
             spendTime = round(endTime - startTime, 2)
             if count % 100 == 0:
-                print(hits, rank_sum)
                 message = "当前正在测试数量:%d,总数量为:%d" % (count, len(self.testTripleList))
-                print(message)
                 writingProgressText(message, fileName='./testStatus.txt')
                 message = ("本次花费时间为:%.2fs,前十排名率为%.2f,总排名平均为%.2f" 
                             % (spendTime, hits / (2 * count), rank_sum / (2 * count))
                           )
-                print(message)  
                 writingProgressText(message, fileName='./testStatus.txt')
         # 除以二是因为头尾各一次
         reuslt_hit_10 = hits / (2 * len(self.testTripleList))
@@ -207,7 +204,9 @@ class testTransH:
 
 if __name__ == "__main__":
     # 初始化entity2id和relation2id
-    loadEntityAndRelation("./FB15k/")
+    datasetPath = "./WN18/"
+    datasetName = "WN18"
+    loadEntityAndRelation(datasetPath)
     
     # 处理一下文本记录文件
     clearProgressText(fileName='./testStatus.txt')
@@ -215,22 +214,20 @@ if __name__ == "__main__":
     relationSet = set()
     # 需要加载的文件:
     # 1.实体向量
-    entityVectorDict = load_vector('entity_50dim_batch400')
+    entityVectorDict = load_vector('%s_entity_50dim_batch400' % datasetName)
     # 2.关系法向量
-    relationNormVectorDict = load_vector('relation_norm_50dim_batch400')
+    relationNormVectorDict = load_vector('%s_relation_hyper_50dim_batch400' % datasetName)
     # 3.关系平面向量
-    relationHyperVectorDict = load_vector('relation_hyper_50dim_batch400')
+    relationHyperVectorDict = load_vector('%s_relation_norm_50dim_batch400' % datasetName)
     # 4.训练文件的三元组
-    trainTripleList = load_triple('train.txt')
+    trainTripleList = load_triple('train.txt', filePath=datasetPath)
     # 5.验证文件的三元组
-    validTripleList = load_triple('valid.txt')
+    validTripleList = load_triple('valid.txt', filePath=datasetPath)
     # 6.测试文件的三元组
-    testTripleList = load_triple('test.txt')
+    testTripleList = load_triple('test.txt', filePath=datasetPath)
     message = "加载完毕，实体向量个数:%d,关系法向量个数:%d,关系平面向量个数:%d" % (len(entityVectorDict.keys()), len(relationNormVectorDict.keys()), len(relationHyperVectorDict.keys()))
-    print(message)
     writingProgressText(message, fileName='./testStatus.txt')
     message = "训练三元组个数:%d,验证三元组个数:%d,测试三元组个数:%d" % (len(trainTripleList), len(validTripleList), len(testTripleList))
-    print(message)
     writingProgressText(message, fileName='./testStatus.txt')
     # 把这些三元组全部拿到，用于test_run验证
 
@@ -241,7 +238,6 @@ if __name__ == "__main__":
         filter_triple=False, norm=2)
     test.test_run()
     hit10, mean_rank = test.test_run()
-    print("raw entity hits@10: ", hit10)
-    print("raw entity meanrank: ",mean_rank)
     result = "hits@10:%.4f, meanrank:%.4f" % (hit10, mean_rank)
-    writingProgressText(result, filePath='', fileName='./result.txt')
+    filename = './%s_result.txt' % datasetName
+    writingProgressText(result, filePath='', fileName=filename)
